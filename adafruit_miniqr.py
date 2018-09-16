@@ -112,7 +112,7 @@ class QRCode:
         datalen = sum([len(x) for x in self.data_list])
         if not self.type:
             for qr_type in range(1, 6):
-                rs_blocks = _getRSBlocks(qr_type, self.ECC)
+                rs_blocks = _get_rs_blocks(qr_type, self.ECC)
                 total_data_count = 0
                 for block in rs_blocks:
                     total_data_count += block['data']
@@ -256,7 +256,7 @@ class QRCode:
     @staticmethod
     def create_data(qr_type, ecc, data_list):
         """Check and format data into bit buffer"""
-        rs_blocks = _getRSBlocks(qr_type, ecc)
+        rs_blocks = _get_rs_blocks(qr_type, ecc)
 
         buffer = QRBitBuffer()
 
@@ -320,22 +320,22 @@ class QRCode:
             offset += dc_count
 
             rs_poly = QRUtil.get_error_correct_polynomial(ec_count)
-            mod_poly = QRPolynomial(dcdata[r], rs_poly.getLength() - 1)
+            mod_poly = QRPolynomial(dcdata[r], rs_poly.get_length() - 1)
 
             while True:
-                if mod_poly.getLength() - rs_poly.getLength() < 0:
+                if mod_poly.get_length() - rs_poly.get_length() < 0:
                     break
                 ratio = _glog(mod_poly.get(0)) - _glog(rs_poly.get(0))
-                num = [0 for x in range(mod_poly.getLength())]
-                for i in range(mod_poly.getLength()):
+                num = [0 for x in range(mod_poly.get_length())]
+                for i in range(mod_poly.get_length()):
                     num[i] = mod_poly.get(i)
-                for i in range(rs_poly.getLength()):
+                for i in range(rs_poly.get_length()):
                     num[i] ^= _gexp(_glog(rs_poly.get(i)) + ratio)
                 mod_poly = QRPolynomial(num, 0)
 
-            ecdata[r] = [0 for x in range(rs_poly.getLength()-1)]
+            ecdata[r] = [0 for x in range(rs_poly.get_length()-1)]
             for i in range(len(ecdata[r])):
-                mod_index = i + mod_poly.getLength() - len(ecdata[r])
+                mod_index = i + mod_poly.get_length() - len(ecdata[r])
                 if mod_index >= 0:
                     ecdata[r][i] = mod_poly.get(mod_index)
                 else:
@@ -364,7 +364,7 @@ class QRCode:
 #pylint: enable=too-many-locals,too-many-branches
 
 class QRUtil(object):
-    """A selection of bit manipulation tools for QR generation"""
+    """A selection of bit manipulation tools for QR generation and BCH encoding"""
     PATTERN_POSITION_TABLE = [b'', b'\x06\x12', b'\x06\x16', b'\x06\x1a',
                               b'\x06\x1e', b'\x06"', b'\x06\x16&',
                               b'\x06\x18*', b'\x06\x1a.', b'\x06\x1c2']
@@ -375,6 +375,7 @@ class QRUtil(object):
 #pylint: disable=invalid-name
     @staticmethod
     def get_BCH_type_info(data):
+        """Encode with G15 BCH mask"""
         d = data << 10
         while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G15) >= 0:
             d ^= QRUtil.G15 << (QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G15))
@@ -382,24 +383,28 @@ class QRUtil(object):
         return ((data << 10) | d) ^ QRUtil.G15_MASK
     @staticmethod
     def get_BCH_type_number(data):
+        """Encode with G18 BCH mask"""
         d = data << 12
         while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18) >= 0:
             d ^= QRUtil.G18 << (QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18))
         return (data << 12) | d
-#pylint: enable=invalid-name
     @staticmethod
     def get_BCH_digit(data):
+        """Count digits in data"""
         digit = 0
         while data != 0:
             digit += 1
             data >>= 1
         return digit
+#pylint: enable=invalid-name
     @staticmethod
-    def get_pattern_position(type):
-        return QRUtil.PATTERN_POSITION_TABLE[type - 1]
+    def get_pattern_position(qr_type):
+        """The mask pattern position array for this QR type"""
+        return QRUtil.PATTERN_POSITION_TABLE[qr_type - 1]
     @staticmethod
     def get_mask(mask, i, j):
-        #pylint: disable=multiple-statements
+        """Perform matching calculation on two vals for given pattern mask"""
+        #pylint: disable=multiple-statements, too-many-return-statements
         if mask == 0: return (i + j) % 2 == 0
         if mask == 1: return i % 2 == 0
         if mask == 2: return j % 3 == 0
@@ -409,17 +414,20 @@ class QRUtil(object):
         if mask == 6: return ((i * j) % 2 + (i * j) % 3) % 2 == 0
         if mask == 7: return ((i * j) % 3 + (i + j) % 2) % 2 == 0
         raise ValueError("Bad mask pattern:" + mask)
-        #pylint: enable=multiple-statements
+        #pylint: enable=multiple-statements, too-many-return-statements
     @staticmethod
     def get_error_correct_polynomial(ecc_length):
-        a = QRPolynomial([1], 0)
+        """ Generate a ecc polynomial"""
+        poly = QRPolynomial([1], 0)
         for i in range(ecc_length):
-            a = a.multiply(QRPolynomial([1, _gexp(i)], 0))
-        return a
+            poly = poly.multiply(QRPolynomial([1, _gexp(i)], 0))
+        return poly
 
 class QRPolynomial:
+    """Structure for creating and manipulating error code polynomials"""
     def __init__(self, num, shift):
-        if len(num) == 0:
+        """Create a QR polynomial"""
+        if not num:
             raise Exception(num.length + "/" + shift)
         offset = 0
         while offset < len(num) and num[offset] == 0:
@@ -429,22 +437,25 @@ class QRPolynomial:
             self.num[i] = num[i + offset]
 
     def get(self, index):
+        """The exponent at the index location"""
         return self.num[index]
-    def getLength(self):
+    def get_length(self):
+        """Length of the poly"""
         return len(self.num)
-    def multiply(self, e):
-        num = [0 for x in range(self.getLength() + e.getLength() - 1)]
+    def multiply(self, e): #pylint: disable=invalid-name
+        """Multiply two polynomials, returns a new one"""
+        num = [0 for x in range(self.get_length() + e.get_length() - 1)]
 
-        for i in range(self.getLength()):
-            for j in range(e.getLength()):
+        for i in range(self.get_length()):
+            for j in range(e.get_length()):
                 num[i + j] ^= _gexp(_glog(self.get(i)) + _glog(e.get(j)))
 
         return QRPolynomial(num, 0)
 
 _QRRS_BLOCK_TABLE = (b'\x01\x1a\x10', b'\x01\x1a\x13', b'\x01\x1a\t', b'\x01\x1a\r', b'\x01,\x1c', b'\x01,"', b'\x01,\x10', b'\x01,\x16', b'\x01F,', b'\x01F7', b'\x02#\r', b'\x02#\x11', b'\x022 ', b'\x01dP', b'\x04\x19\t', b'\x022\x18', b'\x02C+', b'\x01\x86l', b'\x02!\x0b\x02"\x0c', b'\x02!\x0f\x02"\x10', b'\x04+\x1b', b'\x02VD', b'\x04+\x0f', b'\x04+\x13', b'\x041\x1f', b'\x02bN', b"\x04'\r\x01(\x0e", b'\x02 \x0e\x04!\x0f', b"\x02<&\x02='", b'\x02ya', b'\x04(\x0e\x02)\x0f', b'\x04(\x12\x02)\x13', b'\x03:$\x02;%', b'\x02\x92t', b'\x04$\x0c\x04%\r', b'\x04$\x10\x04%\x11') #pylint: disable=line-too-long
 
-def _getRSBlocks(qr_type, ECC):
-    rs_block = _QRRS_BLOCK_TABLE[(qr_type - 1) * 4 + ECC]
+def _get_rs_blocks(qr_type, ecc):
+    rs_block = _QRRS_BLOCK_TABLE[(qr_type - 1) * 4 + ecc]
 
     length = len(rs_block) // 3
     blocks = []
