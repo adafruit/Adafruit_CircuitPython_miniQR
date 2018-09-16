@@ -55,6 +55,7 @@ Implementation Notes
 """
 
 # imports
+import math
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_miniQR.git"
@@ -270,24 +271,24 @@ class QRCode:
         for block in rs_blocks:
             total_data_count += block['data']
 
-        if buffer.getLengthInBits() > total_data_count * 8:
+        if buffer.get_length_bits() > total_data_count * 8:
             raise RuntimeError("Code length overflow: %d > %d" %
-                               (buffer.getLengthInBits(), total_data_count*8))
+                               (buffer.get_length_bits(), total_data_count*8))
 
         #// end code
-        if buffer.getLengthInBits() + 4 <= total_data_count * 8:
+        if buffer.get_length_bits() + 4 <= total_data_count * 8:
             buffer.put(0, 4)
 
         #// padding
-        while buffer.getLengthInBits() % 8 != 0:
-            buffer.putBit(False)
+        while buffer.get_length_bits() % 8 != 0:
+            buffer.put_bit(False)
 
         #// padding
         while True:
-            if buffer.getLengthInBits() >= total_data_count*8:
+            if buffer.get_length_bits() >= total_data_count*8:
                 break
             buffer.put(_PAD0, 8)
-            if buffer.getLengthInBits() >= total_data_count*8:
+            if buffer.get_length_bits() >= total_data_count*8:
                 break
             buffer.put(_PAD1, 8)
 
@@ -371,7 +372,7 @@ class QRUtil(object):
     G15 = 0b10100110111
     G18 = 0b1111100100101
     G15_MASK = 0b101010000010010
-
+#pylint: disable=invalid-name
     @staticmethod
     def get_BCH_type_info(data):
         d = data << 10
@@ -385,6 +386,7 @@ class QRUtil(object):
         while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18) >= 0:
             d ^= QRUtil.G18 << (QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18))
         return (data << 12) | d
+#pylint: enable=invalid-name
     @staticmethod
     def get_BCH_digit(data):
         digit = 0
@@ -397,6 +399,7 @@ class QRUtil(object):
         return QRUtil.PATTERN_POSITION_TABLE[type - 1]
     @staticmethod
     def get_mask(mask, i, j):
+        #pylint: disable=multiple-statements
         if mask == 0: return (i + j) % 2 == 0
         if mask == 1: return i % 2 == 0
         if mask == 2: return j % 3 == 0
@@ -406,6 +409,7 @@ class QRUtil(object):
         if mask == 6: return ((i * j) % 2 + (i * j) % 3) % 2 == 0
         if mask == 7: return ((i * j) % 3 + (i + j) % 2) % 2 == 0
         raise ValueError("Bad mask pattern:" + mask)
+        #pylint: enable=multiple-statements
     @staticmethod
     def get_error_correct_polynomial(ecc_length):
         a = QRPolynomial([1], 0)
@@ -440,20 +444,21 @@ class QRPolynomial:
 _QRRS_BLOCK_TABLE = (b'\x01\x1a\x10', b'\x01\x1a\x13', b'\x01\x1a\t', b'\x01\x1a\r', b'\x01,\x1c', b'\x01,"', b'\x01,\x10', b'\x01,\x16', b'\x01F,', b'\x01F7', b'\x02#\r', b'\x02#\x11', b'\x022 ', b'\x01dP', b'\x04\x19\t', b'\x022\x18', b'\x02C+', b'\x01\x86l', b'\x02!\x0b\x02"\x0c', b'\x02!\x0f\x02"\x10', b'\x04+\x1b', b'\x02VD', b'\x04+\x0f', b'\x04+\x13', b'\x041\x1f', b'\x02bN', b"\x04'\r\x01(\x0e", b'\x02 \x0e\x04!\x0f', b"\x02<&\x02='", b'\x02ya', b'\x04(\x0e\x02)\x0f', b'\x04(\x12\x02)\x13', b'\x03:$\x02;%', b'\x02\x92t', b'\x04$\x0c\x04%\r', b'\x04$\x10\x04%\x11') #pylint: disable=line-too-long
 
 def _getRSBlocks(qr_type, ECC):
-    rsBlock = _QRRS_BLOCK_TABLE[(qr_type - 1) * 4 + ECC]
+    rs_block = _QRRS_BLOCK_TABLE[(qr_type - 1) * 4 + ECC]
 
-    length = len(rsBlock) // 3
-    list = []
+    length = len(rs_block) // 3
+    blocks = []
     for i in range(length):
-        count = rsBlock[i * 3 + 0]
-        totalCount = rsBlock[i * 3 + 1]
-        dataCount = rsBlock[i * 3 + 2]
-        block = {'total' : totalCount, 'data' : dataCount}
-        for j in range(count):
-            list.append(block)
-    return list
+        count = rs_block[i * 3 + 0]
+        total = rs_block[i * 3 + 1]
+        data = rs_block[i * 3 + 2]
+        block = {'total' : total, 'data' : data}
+        for _ in range(count):
+            blocks.append(block)
+    return blocks
 
 class QRBitMatrix:
+    """A bit-packed storage class for matrices"""
     def __init__(self, width, height):
         self.width = width
         self.height = height
@@ -463,19 +468,20 @@ class QRBitMatrix:
         self.used = [0] * self.height * 2
 
     def __repr__(self):
-        s = ""
+        b = ""
         for y in range(self.height):
             for x in range(self.width):
                 if self[x, y]:
-                    s += 'X'
+                    b += 'X'
                 else:
-                    s += '.'
-            s += '\n'
-        return s
+                    b += '.'
+            b += '\n'
+        return b
 
     def __getitem__(self, key):
         x, y = key
-        if y > self.width: raise ValueError()
+        if y > self.width:
+            raise ValueError()
         i = 2*x + (y // 30)
         j = y % 30
         if not self.used[i] & (1 << j):
@@ -484,7 +490,8 @@ class QRBitMatrix:
 
     def __setitem__(self, key, value):
         x, y = key
-        if y > self.width: raise ValueError()
+        if y > self.width:
+            raise ValueError()
         i = 2*x + (y // 30)
         j = y % 30
         if value:
@@ -494,6 +501,7 @@ class QRBitMatrix:
         self.used[i] |= 1 << j # buffer item was set
 
 class QRBitBuffer:
+    """Storage class for a length of individual bits"""
     def __init__(self):
         self.buffer = []
         self.length = 0
@@ -502,17 +510,21 @@ class QRBitBuffer:
         return ".".join([str(n) for n in self.buffer])
 
     def get(self, index):
+        """The bit value at a location"""
         i = index // 8
         return self.buffer[i] & (1 << (7 - index % 8))
 
     def put(self, num, length):
+        """Add a number of bits from a single integer value"""
         for i in range(length):
-            self.putBit(num & (1 << (length - i - 1)))
+            self.put_bit(num & (1 << (length - i - 1)))
 
-    def getLengthInBits(self):
+    def get_length_bits(self):
+        """Size of bit buffer"""
         return self.length
 
-    def putBit(self, bit):
+    def put_bit(self, bit):
+        """Insert one bit at the end of the bit buffer"""
         i = self.length // 8
         if len(self.buffer) <= i:
             self.buffer.append(0)
