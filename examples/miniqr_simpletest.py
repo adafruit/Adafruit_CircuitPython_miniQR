@@ -6,7 +6,7 @@ out = sys.stdout
 WHITE = "\x1b[1;47m  \x1b[40m"
 BLACK = "  "
 
-def print_QR(matrix):
+def prettyprint_QR(matrix):
     # white 4-pixel border at top
     for _ in range(4):
         for _ in range(matrix.width+8):
@@ -30,4 +30,5 @@ def print_QR(matrix):
 qr = adafruit_miniqr.QRCode(qr_type=3, error_correct=adafruit_miniqr.L)
 qr.add_data(b'https://www.adafruit.com')
 qr.make()
-print_QR(qr.matrix)
+print(qr.matrix)
+prettyprint_QR(qr.matrix)

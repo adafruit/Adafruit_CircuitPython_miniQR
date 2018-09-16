@@ -13,7 +13,7 @@ Introduction
     :target: https://travis-ci.org/adafruit/Adafruit_CircuitPython_miniQR
     :alt: Build Status
 
-.. todo:: Describe what the library does.
+A non-hardware dependant miniature QR generator library. All native Python!
 
 Dependencies
 =============
@@ -28,7 +28,13 @@ This is easily achieved by downloading
 Usage Example
 =============
 
-See examples folder for QR generating and displaying/drawing
+.. code-block:: python
+	import adafruit_miniqr
+
+	qr = adafruit_miniqr.QRCode()
+	qr.add_data(b'https://www.adafruit.com')
+	qr.make()
+	print(qr.matrix)
 
 Contributing
 ============
