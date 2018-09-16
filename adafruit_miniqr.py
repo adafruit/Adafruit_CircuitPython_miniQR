@@ -124,7 +124,7 @@ class QRCode:
     def make(self, *, test=False, mask_pattern=0):
         """Perform the actual generation of the QR matrix. To keep things
         small and speedy we don't generate all 8 mask patterns and pick
-        the best. Instead, please pass in a desired `mask_pattern`, the
+        the best. Instead, please pass in a desired mask_pattern, the
         default mask is 0."""
         self.module_count = self.type * 4 + 17
         self.matrix = QRBitMatrix(self.module_count, self.module_count)
