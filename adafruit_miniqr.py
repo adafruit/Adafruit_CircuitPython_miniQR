@@ -150,14 +150,10 @@ class QRCode:
             for c in range(-1, 8):   #pylint: disable=invalid-name
                 if (col + c <= -1 or self.module_count <= col + c):
                     continue
-                #pylint: disable=too-many-boolean-expressions
-                if ((r >= 0 and r <= 6 and (c == 0 or c == 6))
+                test = ((r >= 0 and r <= 6 and (c == 0 or c == 6))
                         or (c >= 0 and c <= 6 and (r == 0 or r == 6))
-                        or (r >= 2 and r <= 4 and c >= 2 and c <= 4)):
-                    self.matrix[row+r, col+c] = True
-                else:
-                    self.matrix[row+r, col+c] = False
-                #pylint: enable=too-many-boolean-expressions
+                        or (r >= 2 and r <= 4 and c >= 2 and c <= 4))
+                self.matrix[row+r, col+c] = test
     def setup_timing_pattern(self):
         """Add the timing data pixels to the matrix"""
         for r in range(8, self.module_count-8):
@@ -180,11 +176,10 @@ class QRCode:
                     continue
 
                 for r in range(-2, 3):
-                    for c in range(-2, 3):
-                        if abs(r) == 2 or abs(c) == 2 or (r == 0 and c == 0):
-                            self.matrix[row+r, col+c] = True
-                        else:
-                            self.matrix[row+r, col+c] = False
+                    for c in range(-2, 3):  #pylint: disable=invalid-name
+                        test = (abs(r) == 2 or abs(c) == 2 or
+                                (r == 0 and c == 0))
+                        self.matrix[row+r, col+c] = test
 
     def setup_type_number(self, test):
         """Add the type number pixels to the matrix"""
@@ -227,29 +222,30 @@ class QRCode:
         self.matrix[self.module_count - 8, 8] = (not test)
 
     def map_data(self, data, mask_pattern):
+        """Map the data onto the QR code"""
         inc = -1
         row = self.module_count - 1
-        bitIndex = 7
-        byteIndex = 0
+        bit_idx = 7
+        byte_idx = 0
 
         for col in range(self.module_count - 1, 0, -2):
             if col == 6:
                 col -= 1
 
             while True:
-                for c in range(2):
-                    if (self.matrix[row, col - c] == None):
+                for c in range(2):  #pylint: disable=invalid-name
+                    if self.matrix[row, col - c] is None:
                         dark = False
-                        if byteIndex < len(data):
-                            dark = ((data[byteIndex] >> bitIndex) & 1) == 1
+                        if byte_idx < len(data):
+                            dark = ((data[byte_idx] >> bit_idx) & 1) == 1
                         mask = QRUtil.getMask(mask_pattern, row, col - c)
                         if mask:
                             dark = not dark
                         self.matrix[row, col-c] = dark
-                        bitIndex -= 1
-                        if bitIndex == -1:
-                            byteIndex += 1
-                            bitIndex = 7
+                        bit_idx -= 1
+                        if bit_idx == -1:
+                            byte_idx += 1
+                            bit_idx = 7
                 row += inc
                 if row < 0 or self.module_count <= row:
                     row -= inc
@@ -257,22 +253,22 @@ class QRCode:
                     break
 
     @staticmethod
-    def create_data(type, ECC, data_list):
-        rs_blocks = _getRSBlocks(type, ECC)
+    def create_data(qr_type, ecc, data_list):
+        """Check and format data into bit buffer"""
+        rs_blocks = _getRSBlocks(qr_type, ecc)
 
         buffer = QRBitBuffer()
 
-        for i in range(len(data_list)):
-            data = data_list[i]
+        for data in data_list:
             buffer.put(_MODE_8BIT_BYTE, 4)
             buffer.put(len(data), 8)
-            for i in range(len(data)):
-                buffer.put(data[i], 8)
+            for byte in data:
+                buffer.put(byte, 8)
 
         #// calc num max data.
         total_data_count = 0
-        for i in range(len(rs_blocks)):
-            total_data_count += rs_blocks[i]['data']
+        for block in rs_blocks:
+            total_data_count += block['data']
 
         if buffer.getLengthInBits() > total_data_count * 8:
             raise RuntimeError("Code length overflow: %d > %d" %
@@ -295,75 +291,79 @@ class QRCode:
                 break
             buffer.put(_PAD1, 8)
 
-        return QRCode.createBytes(buffer, rs_blocks)
+        return QRCode.create_bytes(buffer, rs_blocks)
 
+    #pylint: disable=too-many-locals,too-many-branches
     @staticmethod
-    def createBytes(buffer, rs_blocks):
+    def create_bytes(buffer, rs_blocks):
+        """Perform error calculation math on bit buffer"""
         offset = 0
-        maxDcCount = 0
-        maxEcCount = 0
+        max_dc_count = 0
+        max_ec_count = 0
 
         dcdata = [0] * len(rs_blocks)
         ecdata = [0] * len(rs_blocks)
 
-        for r in range(len(rs_blocks)):
+        for r, block in enumerate(rs_blocks):
 
-            dcCount = rs_blocks[r]['data']
-            ecCount = rs_blocks[r]['total'] - dcCount
+            dc_count = block['data']
+            ec_count = block['total'] - dc_count
 
-            maxDcCount = max(maxDcCount, dcCount)
-            maxEcCount = max(maxEcCount, ecCount)
+            max_dc_count = max(max_dc_count, dc_count)
+            max_ec_count = max(max_ec_count, ec_count)
 
-            dcdata[r] = [0 for x in range(dcCount)]
+            dcdata[r] = [0] * dc_count
 
             for i in range(len(dcdata[r])):
                 dcdata[r][i] = 0xff & buffer.buffer[i + offset]
-            offset += dcCount
+            offset += dc_count
 
-            rsPoly = QRUtil.getErrorCorrectPolynomial(ecCount)
-            modPoly = QRPolynomial(dcdata[r], rsPoly.getLength() - 1)
+            rs_poly = QRUtil.getErrorCorrectPolynomial(ec_count)
+            mod_poly = QRPolynomial(dcdata[r], rs_poly.getLength() - 1)
 
             while True:
-                if modPoly.getLength() - rsPoly.getLength() < 0:
+                if mod_poly.getLength() - rs_poly.getLength() < 0:
                     break
-                ratio = _glog(modPoly.get(0)) - _glog(rsPoly.get(0))
-                num = [0 for x in range(modPoly.getLength())]
-                for i in range(modPoly.getLength()):
-                    num[i] = modPoly.get(i)
-                for i in range(rsPoly.getLength()):
-                    num[i] ^= _gexp(_glog(rsPoly.get(i)) + ratio)
-                modPoly = QRPolynomial(num, 0)
+                ratio = _glog(mod_poly.get(0)) - _glog(rs_poly.get(0))
+                num = [0 for x in range(mod_poly.getLength())]
+                for i in range(mod_poly.getLength()):
+                    num[i] = mod_poly.get(i)
+                for i in range(rs_poly.getLength()):
+                    num[i] ^= _gexp(_glog(rs_poly.get(i)) + ratio)
+                mod_poly = QRPolynomial(num, 0)
 
-            ecdata[r] = [0 for x in range(rsPoly.getLength()-1)]
+            ecdata[r] = [0 for x in range(rs_poly.getLength()-1)]
             for i in range(len(ecdata[r])):
-                modIndex = i + modPoly.getLength() - len(ecdata[r])
-                if modIndex >= 0:
-                    ecdata[r][i] = modPoly.get(modIndex)
+                mod_index = i + mod_poly.getLength() - len(ecdata[r])
+                if mod_index >= 0:
+                    ecdata[r][i] = mod_poly.get(mod_index)
                 else:
                     ecdata[r][i] = 0
 
-        totalCodeCount = 0
-        for i in range(len(rs_blocks)):
-            totalCodeCount += rs_blocks[i]['total']
+        total_code_count = 0
+        for block in rs_blocks:
+            total_code_count += block['total']
 
-        data = [None] * totalCodeCount
+        data = [None] * total_code_count
         index = 0
 
-        for i in range(maxDcCount):
+        for i in range(max_dc_count):
             for r in range(len(rs_blocks)):
                 if i < len(dcdata[r]):
                     data[index] = dcdata[r][i]
                     index += 1
 
-        for i in range(maxEcCount):
+        for i in range(max_ec_count):
             for r in range(len(rs_blocks)):
                 if i < len(ecdata[r]):
                     data[index] = ecdata[r][i]
                     index += 1
 
         return data
+#pylint: enable=too-many-locals,too-many-branches
 
 class QRUtil(object):
+    """A selection of bit manipulation tools for QR generation"""
     PATTERN_POSITION_TABLE = [b'', b'\x06\x12', b'\x06\x16', b'\x06\x1a',
                               b'\x06\x1e', b'\x06"', b'\x06\x16&',
                               b'\x06\x18*', b'\x06\x1a.', b'\x06\x1c2']
