@@ -29,6 +29,7 @@ Usage Example
 =============
 
 .. code-block:: python
+
 	import adafruit_miniqr
 
 	qr = adafruit_miniqr.QRCode()
