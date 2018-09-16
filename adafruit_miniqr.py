@@ -168,7 +168,7 @@ class QRCode:
 
     def setup_position_adjust_pattern(self):
         """Add the position adjust data pixels to the matrix"""
-        pos = QRUtil.getPatternPosition(self.type)
+        pos = QRUtil.get_pattern_position(self.type)
 
         for row in pos:
             for col in pos:
@@ -183,7 +183,7 @@ class QRCode:
 
     def setup_type_number(self, test):
         """Add the type number pixels to the matrix"""
-        bits = QRUtil.getBCHTypeNumber(self.type)
+        bits = QRUtil.get_BCH_type_number(self.type)
 
         for i in range(18):
             mod = not test and ((bits >> i) & 1) == 1
@@ -196,7 +196,7 @@ class QRCode:
     def setup_type_info(self, test, mask_pattern):
         """Add the type info pixels to the matrix"""
         data = (self.ECC << 3) | mask_pattern
-        bits = QRUtil.getBCHTypeInfo(data)
+        bits = QRUtil.get_BCH_type_info(data)
 
         #// vertical
         for i in range(15):
@@ -238,7 +238,7 @@ class QRCode:
                         dark = False
                         if byte_idx < len(data):
                             dark = ((data[byte_idx] >> bit_idx) & 1) == 1
-                        mask = QRUtil.getMask(mask_pattern, row, col - c)
+                        mask = QRUtil.get_mask(mask_pattern, row, col - c)
                         if mask:
                             dark = not dark
                         self.matrix[row, col-c] = dark
@@ -318,7 +318,7 @@ class QRCode:
                 dcdata[r][i] = 0xff & buffer.buffer[i + offset]
             offset += dc_count
 
-            rs_poly = QRUtil.getErrorCorrectPolynomial(ec_count)
+            rs_poly = QRUtil.get_error_correct_polynomial(ec_count)
             mod_poly = QRPolynomial(dcdata[r], rs_poly.getLength() - 1)
 
             while True:
@@ -373,30 +373,30 @@ class QRUtil(object):
     G15_MASK = 0b101010000010010
 
     @staticmethod
-    def getBCHTypeInfo(data):
+    def get_BCH_type_info(data):
         d = data << 10
-        while QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15) >= 0:
-            d ^= QRUtil.G15 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G15))
+        while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G15) >= 0:
+            d ^= QRUtil.G15 << (QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G15))
 
         return ((data << 10) | d) ^ QRUtil.G15_MASK
     @staticmethod
-    def getBCHTypeNumber(data):
+    def get_BCH_type_number(data):
         d = data << 12
-        while QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18) >= 0:
-            d ^= QRUtil.G18 << (QRUtil.getBCHDigit(d) - QRUtil.getBCHDigit(QRUtil.G18))
+        while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18) >= 0:
+            d ^= QRUtil.G18 << (QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18))
         return (data << 12) | d
     @staticmethod
-    def getBCHDigit(data):
+    def get_BCH_digit(data):
         digit = 0
         while data != 0:
             digit += 1
             data >>= 1
         return digit
     @staticmethod
-    def getPatternPosition(type):
+    def get_pattern_position(type):
         return QRUtil.PATTERN_POSITION_TABLE[type - 1]
     @staticmethod
-    def getMask(mask, i, j):
+    def get_mask(mask, i, j):
         if mask == 0: return (i + j) % 2 == 0
         if mask == 1: return i % 2 == 0
         if mask == 2: return j % 3 == 0
@@ -407,9 +407,9 @@ class QRUtil(object):
         if mask == 7: return ((i * j) % 3 + (i + j) % 2) % 2 == 0
         raise ValueError("Bad mask pattern:" + mask)
     @staticmethod
-    def getErrorCorrectPolynomial(errorCorrectLength):
+    def get_error_correct_polynomial(ecc_length):
         a = QRPolynomial([1], 0)
-        for i in range(errorCorrectLength):
+        for i in range(ecc_length):
             a = a.multiply(QRPolynomial([1, _gexp(i)], 0))
         return a
 
