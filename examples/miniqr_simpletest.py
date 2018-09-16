@@ -1,4 +1,5 @@
 import sys
+import hashlib
 import adafruit_miniqr
 
 # For drawing filled rectangles to the console:
@@ -27,7 +28,16 @@ def print_QR(matrix):
             out.write(WHITE)
         print()
 
-qr = adafruit_miniqr.QRCode(3, pyqrnative.H)
-qr.addData(b'https://www.adafruit.com')
+qr = adafruit_miniqr.QRCode(qr_type=3, error_correct=adafruit_miniqr.H)
+qr.add_data(b'https://www.adafruit.com')
 qr.make()
+
+matrix = qr.matrix
+matrix_s = str(matrix)
+print(matrix_s)
+hashed = hashlib.md5(matrix_s.encode('utf-8')).hexdigest()
+print(hashed)
+if hashed != "7b260ec364d4938cc7b7a18af07cfc61":
+    raise Exception("wrong hash")
+
 print_QR(qr.matrix)
