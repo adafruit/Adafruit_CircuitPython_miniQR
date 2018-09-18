@@ -129,21 +129,21 @@ class QRCode:
         self.module_count = self.type * 4 + 17
         self.matrix = QRBitMatrix(self.module_count, self.module_count)
 
-        self.setup_position_probe_pattern(0, 0)
-        self.setup_position_probe_pattern(self.module_count - 7, 0)
-        self.setup_position_probe_pattern(0, self.module_count - 7)
-        self.setup_position_adjust_pattern()
-        self.setup_timing_pattern()
-        self.setup_type_info(test, mask_pattern)
+        self._setup_position_probe_pattern(0, 0)
+        self._setup_position_probe_pattern(self.module_count - 7, 0)
+        self._setup_position_probe_pattern(0, self.module_count - 7)
+        self._setup_position_adjust_pattern()
+        self._setup_timing_pattern()
+        self._setup_type_info(test, mask_pattern)
 
         if self.type >= 7:
-            self.setup_type_number(test)
+            self._setup_type_number(test)
 
         if self.data_cache is None:
-            self.data_cache = QRCode.create_data(self.type, self.ECC, self.data_list)
-        self.map_data(self.data_cache, mask_pattern)
+            self.data_cache = QRCode._create_data(self.type, self.ECC, self.data_list)
+        self._map_data(self.data_cache, mask_pattern)
 
-    def setup_position_probe_pattern(self, row, col):
+    def _setup_position_probe_pattern(self, row, col):
         """Add the positition probe data pixels to the matrix"""
         for r in range(-1, 8):
             if (row + r <= -1 or self.module_count <= row + r):
@@ -155,7 +155,7 @@ class QRCode:
                         or (c >= 0 and c <= 6 and (r == 0 or r == 6))
                         or (r >= 2 and r <= 4 and c >= 2 and c <= 4))
                 self.matrix[row+r, col+c] = test
-    def setup_timing_pattern(self):
+    def _setup_timing_pattern(self):
         """Add the timing data pixels to the matrix"""
         for r in range(8, self.module_count-8):
             if (self.matrix[r, 6] != None):
@@ -167,7 +167,7 @@ class QRCode:
                 continue
             self.matrix[6, c] = (c % 2 == 0)
 
-    def setup_position_adjust_pattern(self):
+    def _setup_position_adjust_pattern(self):
         """Add the position adjust data pixels to the matrix"""
         pos = QRUtil.get_pattern_position(self.type)
 
@@ -182,7 +182,7 @@ class QRCode:
                                 (r == 0 and c == 0))
                         self.matrix[row+r, col+c] = test
 
-    def setup_type_number(self, test):
+    def _setup_type_number(self, test):
         """Add the type number pixels to the matrix"""
         bits = QRUtil.get_BCH_type_number(self.type)
 
@@ -194,7 +194,7 @@ class QRCode:
             mod = not test and ((bits >> i) & 1) == 1
             self.matrix[i % 3 + self.module_count - 8 - 3, i // 3] = mod
 
-    def setup_type_info(self, test, mask_pattern):
+    def _setup_type_info(self, test, mask_pattern):
         """Add the type info pixels to the matrix"""
         data = (self.ECC << 3) | mask_pattern
         bits = QRUtil.get_BCH_type_info(data)
@@ -222,7 +222,7 @@ class QRCode:
         #// fixed module
         self.matrix[self.module_count - 8, 8] = (not test)
 
-    def map_data(self, data, mask_pattern):
+    def _map_data(self, data, mask_pattern):
         """Map the data onto the QR code"""
         inc = -1
         row = self.module_count - 1
@@ -254,7 +254,7 @@ class QRCode:
                     break
 
     @staticmethod
-    def create_data(qr_type, ecc, data_list):
+    def _create_data(qr_type, ecc, data_list):
         """Check and format data into bit buffer"""
         rs_blocks = _get_rs_blocks(qr_type, ecc)
 
@@ -292,11 +292,11 @@ class QRCode:
                 break
             buffer.put(_PAD1, 8)
 
-        return QRCode.create_bytes(buffer, rs_blocks)
+        return QRCode._create_bytes(buffer, rs_blocks)
 
     #pylint: disable=too-many-locals,too-many-branches
     @staticmethod
-    def create_bytes(buffer, rs_blocks):
+    def _create_bytes(buffer, rs_blocks):
         """Perform error calculation math on bit buffer"""
         offset = 0
         max_dc_count = 0
