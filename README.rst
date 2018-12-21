@@ -9,8 +9,8 @@ Introduction
     :target: https://discord.gg/nBQh6qu
     :alt: Discord
 
-.. image:: https://travis-ci.org/adafruit/Adafruit_CircuitPython_miniQR.svg?branch=master
-    :target: https://travis-ci.org/adafruit/Adafruit_CircuitPython_miniQR
+.. image:: https://travis-ci.com/adafruit/Adafruit_CircuitPython_miniQR.svg?branch=master
+    :target: https://travis-ci.com/adafruit/Adafruit_CircuitPython_miniQR
     :alt: Build Status
 
 A non-hardware dependant miniature QR generator library. All native Python!
