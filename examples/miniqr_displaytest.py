@@ -1,60 +1,45 @@
 import board
-import pulseio
 import displayio
 import adafruit_miniqr
 
-DISPLAY_W = 128
-DISPLAY_H = 128
-
-backlight = pulseio.PWMOut(board.TFT_BACKLIGHT)
-backlight.duty_cycle = 0
-
-def draw_QR(matrix):
-    # how big each pixel is, add 2 blocks on either side
-    BLOCK_SIZE = DISPLAY_W // (matrix.width+4)
-
-    # Center the QR code in the middle of the screen
-    X_OFFSET = (DISPLAY_W - BLOCK_SIZE * matrix.width) // 2
-    Y_OFFSET = (DISPLAY_H - BLOCK_SIZE * matrix.height) // 2
-
+def bitmap_QR(matrix):
     # monochome (2 color) palette
-    palette = displayio.Palette(2)
-    palette[0] = 0xFFFFFF
-    palette[1] = 0x000000
+    BORDER_PIXELS  = 2
 
     # bitmap the size of the screen, monochrome (2 colors)
-    bitmap = displayio.Bitmap(DISPLAY_H, DISPLAY_W, 2)
-
+    bitmap = displayio.Bitmap(matrix.width+2*BORDER_PIXELS,
+                              matrix.height+2*BORDER_PIXELS, 2)
     # raster the QR code
-    line = bytearray(DISPLAY_W // 8)  # monochrome means 8 pixels per byte
     for y in range(matrix.height):    # each scanline in the height
-        for i, _ in enumerate(line):    # initialize it to be empty
-            line[i] = 0
         for x in range(matrix.width):
             if matrix[x, y]:
-                for b in range(BLOCK_SIZE):
-                    _x = X_OFFSET + x * BLOCK_SIZE + b
-                    line[_x // 8] |= 1 << (7-(_x % 8))
+                bitmap[x+BORDER_PIXELS, y+BORDER_PIXELS] = 1
+            else:
+                bitmap[x+BORDER_PIXELS, y+BORDER_PIXELS] = 0
+    return bitmap
 
-        for b in range(BLOCK_SIZE):
-            # load this line of data in, as many time as block size
-            #pylint: disable=protected-access
-            bitmap._load_row(Y_OFFSET + y*BLOCK_SIZE+b, line)
-
-    # display the bitmap using our palette
-    splash = displayio.Group()
-    face = displayio.Sprite(bitmap, pixel_shader=palette, position=(0, 0))
-    splash.append(face)
-    board.DISPLAY.show(splash)
-    board.DISPLAY.wait_for_frame()
-
-qr = adafruit_miniqr.QRCode()
+qr = adafruit_miniqr.QRCode(qr_type=3, error_correct=adafruit_miniqr.L)
 qr.add_data(b'https://www.adafruit.com/circuitpython')
 qr.make()
-draw_QR(qr.matrix)
 
-# turn on backlight
-backlight.duty_cycle = 35000
+# generate the 1-pixel-per-bit bitmap
+qr_bitmap = bitmap_QR(qr.matrix)
+# We'll draw with a classic black/white palette
+palette = displayio.Palette(2)
+palette[0] = 0xFFFFFF
+palette[1] = 0x000000
+# we'll scale the QR code as big as the display can handle
+scale = min(board.DISPLAY.width//qr_bitmap.width, board.DISPLAY.height//qr_bitmap.height)
+# then center it!
+pos_x = int (((board.DISPLAY.width/scale) - qr_bitmap.width) / 2)
+pos_y = int (((board.DISPLAY.height/scale) - qr_bitmap.height) / 2)
+qr_img = displayio.TileGrid(qr_bitmap, pixel_shader=palette, x=pos_x, y=pos_y)
 
+splash = displayio.Group(scale=scale)
+splash.append(qr_img)
+board.DISPLAY.show(splash)
+board.DISPLAY.wait_for_frame()
+
+# Hang out forever
 while True:
     pass
