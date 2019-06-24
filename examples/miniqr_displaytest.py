@@ -1,5 +1,4 @@
 import board
-import pulseio
 import displayio
 import adafruit_miniqr
 
@@ -32,9 +31,9 @@ palette[1] = 0x000000
 # we'll scale the QR code as big as the display can handle
 scale = min(board.DISPLAY.width//qr_bitmap.width, board.DISPLAY.height//qr_bitmap.height)
 # then center it!
-x = int (((board.DISPLAY.width/scale) - qr_bitmap.width) / 2)
-y = int (((board.DISPLAY.height/scale) - qr_bitmap.height) / 2)
-qr_img = displayio.TileGrid(qr_bitmap, pixel_shader=palette, x=x, y=y)
+pos_x = int (((board.DISPLAY.width/scale) - qr_bitmap.width) / 2)
+pos_y = int (((board.DISPLAY.height/scale) - qr_bitmap.height) / 2)
+qr_img = displayio.TileGrid(qr_bitmap, pixel_shader=palette, x=pos_x, y=pos_y)
 
 splash = displayio.Group(scale=scale)
 splash.append(qr_img)
