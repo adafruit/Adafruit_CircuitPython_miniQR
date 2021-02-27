@@ -247,6 +247,8 @@ class QRCode:
         buffer = QRBitBuffer()
 
         for data in data_list:
+            if isinstance(data, str):
+                data = str.encode(data)
             buffer.put(_MODE_8BIT_BYTE, 4)
             buffer.put(len(data), 8)
             for byte in data:
