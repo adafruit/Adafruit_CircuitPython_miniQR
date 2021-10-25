@@ -62,6 +62,11 @@ Usage Example
 	qr.make()
 	print(qr.matrix)
 
+Documentation
+=============
+
+API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/miniqr/en/latest/>`_.
+
 Contributing
 ============
 
