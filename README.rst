@@ -2,7 +2,7 @@ Introduction
 ============
 
 .. image:: https://readthedocs.org/projects/adafruit-circuitpython-miniqr/badge/?version=latest
-    :target: https://circuitpython.readthedocs.io/projects/miniqr/en/latest/
+    :target: https://docs.circuitpython.org/projects/miniqr/en/latest/
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/discord/327254708534116352.svg
@@ -65,7 +65,7 @@ Usage Example
 Documentation
 =============
 
-API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/miniqr/en/latest/>`_.
+API documentation for this library can be found on `Read the Docs <https://docs.circuitpython.org/projects/miniqr/en/latest/>`_.
 
 Contributing
 ============
