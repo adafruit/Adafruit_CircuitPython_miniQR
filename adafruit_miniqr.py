@@ -437,7 +437,7 @@ class QRUtil:
 
     @staticmethod
     def get_error_correct_polynomial(ecc_length):
-        """ Generate a ecc polynomial"""
+        """Generate a ecc polynomial"""
         poly = QRPolynomial([1], 0)
         for i in range(ecc_length):
             poly = poly.multiply(QRPolynomial([1, _gexp(i)], 0))
