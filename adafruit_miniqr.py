@@ -93,7 +93,7 @@ class QRCode:
     def add_data(self, data):
         """Add more data to the QR code, must be bytestring stype"""
         self.data_list.append(data)
-        datalen = sum([len(x) for x in self.data_list])
+        datalen = sum(len(x) for x in self.data_list)
         if not self.type:
             for qr_type in range(1, 6):
                 rs_blocks = _get_rs_blocks(qr_type, self.ECC)
