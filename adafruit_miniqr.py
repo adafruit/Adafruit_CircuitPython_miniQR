@@ -450,7 +450,7 @@ class QRPolynomial:
     def __init__(self, num, shift):
         """Create a QR polynomial"""
         if not num:
-            raise Exception(num.length + "/" + shift)
+            raise ValueError(num.length + "/" + shift)
         offset = 0
         while offset < len(num) and num[offset] == 0:
             offset += 1
