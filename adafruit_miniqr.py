@@ -296,7 +296,6 @@ class QRCode:
         ecdata = [0] * len(rs_blocks)
 
         for r, block in enumerate(rs_blocks):
-
             dc_count = block["data"]
             ec_count = block["total"] - dc_count
 
@@ -375,6 +374,7 @@ class QRUtil:
     G15 = 0b10100110111
     G18 = 0b1111100100101
     G15_MASK = 0b101010000010010
+
     # pylint: disable=invalid-name
     @staticmethod
     def get_BCH_type_info(data):
