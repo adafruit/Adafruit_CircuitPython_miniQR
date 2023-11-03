@@ -45,7 +45,7 @@ qr_img = displayio.TileGrid(qr_bitmap, pixel_shader=palette, x=pos_x, y=pos_y)
 
 splash = displayio.Group(scale=scale)
 splash.append(qr_img)
-board.DISPLAY.show(splash)
+board.DISPLAY.root_group = splash
 
 # Hang out forever
 while True:
