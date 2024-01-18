@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Adafruit_CircuitPython_miniQR
+Source: https://github.com/adafruit/Adafruit_CircuitPython_miniQR
+
+Files: tests/*.gild
+Copyright: 2019 Translation Company
+License: Unlicense
