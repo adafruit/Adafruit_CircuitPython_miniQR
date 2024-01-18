@@ -2,13 +2,9 @@
 #
 # SPDX-License-Identifier: MIT
 
-import sys
 import unittest
 import random
 
-sys.path.append(".")
-
-# pylint: disable=C0413
 import adafruit_miniqr
 
 
