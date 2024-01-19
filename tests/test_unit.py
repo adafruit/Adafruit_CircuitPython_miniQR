@@ -59,8 +59,9 @@ class TestMiniQR(unittest.TestCase):
     def test_qr_auto(self):
         # Confirm that increasing message size increases the matrix size monotonically
         sizes = []
-        for i in range(14):  # size 41 crashes
-            _m = enc(b"aBc!1234" * i)
+        for i in range(29):
+            msg = b"aBc!1234" * i
+            _m = enc(msg)
             sizes.append(_m.width)
         self.assertTrue(len(set(sizes)) > 1)
         self.assertEqual(sizes, sorted(sizes))
@@ -89,7 +90,7 @@ class TestMiniQR(unittest.TestCase):
 
     def test_qr_maximum(self):
         msg = bytes([random.randrange(32, 127) for i in range(230)])
-        _a = enc(msg, qr_type=9)
+        _a = enc(msg)
         self.assertTrue(_a is not None)
 
 
