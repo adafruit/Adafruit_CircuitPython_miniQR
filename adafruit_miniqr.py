@@ -95,7 +95,7 @@ class QRCode:
         self.data_list.append(data)
         datalen = sum(len(x) for x in self.data_list)
         if not self.type:
-            for qr_type in range(1, 6):
+            for qr_type in range(1, 10):
                 rs_blocks = _get_rs_blocks(qr_type, self.ECC)
                 total_data_count = 0
                 for block in rs_blocks:
