@@ -473,14 +473,14 @@ class QRPolynomial:
         return len(self.num)
 
     def multiply(
-        self, e: "QRPolynomial"
+        self, other_polynomial: "QRPolynomial"
     ) -> "QRPolynomial":  # pylint: disable=invalid-name
         """Multiply two polynomials, returns a new one"""
-        num = [0 for x in range(self.get_length() + e.get_length() - 1)]
+        num = [0 for x in range(self.get_length() + other_polynomial.get_length() - 1)]
 
         for i in range(self.get_length()):
-            for j in range(e.get_length()):
-                num[i + j] ^= _gexp(_glog(self.get(i)) + _glog(e.get(j)))
+            for j in range(other_polynomial.get_length()):
+                num[i + j] ^= _gexp(_glog(self.get(i)) + _glog(other_polynomial.get(j)))
 
         return QRPolynomial(num, 0)
 
