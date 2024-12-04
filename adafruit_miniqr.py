@@ -36,6 +36,12 @@ Implementation Notes
 # imports
 import math
 
+
+try:
+    from typing import Optional, List, Dict, Tuple
+except ImportError:
+    pass
+
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_miniQR.git"
 
@@ -52,14 +58,14 @@ _PAD1 = 0x11
 # Optimized polynomial helpers
 
 
-def _glog(n):
+def _glog(n: int) -> int:
     """Lookup log(n) from pre-calculated byte table"""
     if n < 1:
         raise ValueError("glog(" + n + ")")
     return LOG_TABLE[n]
 
 
-def _gexp(n):
+def _gexp(n: int) -> int:
     """Lookup exp(n) from pre-calculated byte table"""
     while n < 0:
         n += 255
@@ -78,7 +84,7 @@ LOG_TABLE = b"\x00\x00\x01\x19\x022\x1a\xc6\x03\xdf3\xee\x1bh\xc7K\x04d\xe0\x0e4
 class QRCode:
     """The generator class for QR code matrices"""
 
-    def __init__(self, *, qr_type=None, error_correct=L):
+    def __init__(self, *, qr_type: Optional[int] = None, error_correct: int = L):
         """Initialize an empty QR code. You can define the `qr_type` (size)
         of the code matrix, or have the libary auto-select the smallest
         match. Default `error_correct` is type L (7%), but you can select M,
@@ -90,7 +96,7 @@ class QRCode:
         self.data_cache = None
         self.data_list = []
 
-    def add_data(self, data):
+    def add_data(self, data: bytes) -> None:
         """Add more data to the QR code, must be bytestring stype"""
         self.data_list.append(data)
         datalen = sum(len(x) for x in self.data_list)
@@ -105,7 +111,7 @@ class QRCode:
                     break
         self.data_cache = None
 
-    def make(self, *, test=False, mask_pattern=0):
+    def make(self, *, test: bool = False, mask_pattern: int = 0) -> None:
         """Perform the actual generation of the QR matrix. To keep things
         small and speedy we don't generate all 8 mask patterns and pick
         the best. Instead, please pass in a desired mask_pattern, the
@@ -127,7 +133,7 @@ class QRCode:
             self.data_cache = QRCode._create_data(self.type, self.ECC, self.data_list)
         self._map_data(self.data_cache, mask_pattern)
 
-    def _setup_position_probe_pattern(self, row, col):
+    def _setup_position_probe_pattern(self, row: int, col: int) -> None:
         """Add the positition probe data pixels to the matrix"""
         for r in range(-1, 8):
             if row + r <= -1 or self.module_count <= row + r:
@@ -142,7 +148,7 @@ class QRCode:
                 )
                 self.matrix[row + r, col + c] = test
 
-    def _setup_timing_pattern(self):
+    def _setup_timing_pattern(self) -> None:
         """Add the timing data pixels to the matrix"""
         for r in range(8, self.module_count - 8):
             if self.matrix[r, 6] is not None:
@@ -154,7 +160,7 @@ class QRCode:
                 continue
             self.matrix[6, c] = c % 2 == 0
 
-    def _setup_position_adjust_pattern(self):
+    def _setup_position_adjust_pattern(self) -> None:
         """Add the position adjust data pixels to the matrix"""
         pos = QRUtil.get_pattern_position(self.type)
 
@@ -168,7 +174,7 @@ class QRCode:
                         test = abs(r) == 2 or abs(c) == 2 or (r == 0 and c == 0)
                         self.matrix[row + r, col + c] = test
 
-    def _setup_type_number(self, test):
+    def _setup_type_number(self, test: bool) -> None:
         """Add the type number pixels to the matrix"""
         bits = QRUtil.get_BCH_type_number(self.type)
 
@@ -180,7 +186,7 @@ class QRCode:
             mod = not test and ((bits >> i) & 1) == 1
             self.matrix[i % 3 + self.module_count - 8 - 3, i // 3] = mod
 
-    def _setup_type_info(self, test, mask_pattern):
+    def _setup_type_info(self, test: bool, mask_pattern: int) -> None:
         """Add the type info pixels to the matrix"""
         data = (self.ECC << 3) | mask_pattern
         bits = QRUtil.get_BCH_type_info(data)
@@ -208,7 +214,7 @@ class QRCode:
         # // fixed module
         self.matrix[self.module_count - 8, 8] = not test
 
-    def _map_data(self, data, mask_pattern):
+    def _map_data(self, data: bytes, mask_pattern: int) -> None:
         """Map the data onto the QR code"""
         inc = -1
         row = self.module_count - 1
@@ -240,7 +246,7 @@ class QRCode:
                     break
 
     @staticmethod
-    def _create_data(qr_type, ecc, data_list):
+    def _create_data(qr_type: int, ecc: int, data_list: list) -> bytes:
         """Check and format data into bit buffer"""
         rs_blocks = _get_rs_blocks(qr_type, ecc)
 
@@ -286,7 +292,7 @@ class QRCode:
 
     # pylint: disable=too-many-locals,too-many-branches
     @staticmethod
-    def _create_bytes(buffer, rs_blocks):
+    def _create_bytes(buffer: bytes, rs_blocks: List[Dict]) -> bytes:
         """Perform error calculation math on bit buffer"""
         offset = 0
         max_dc_count = 0
@@ -377,7 +383,7 @@ class QRUtil:
 
     # pylint: disable=invalid-name
     @staticmethod
-    def get_BCH_type_info(data):
+    def get_BCH_type_info(data: int) -> int:
         """Encode with G15 BCH mask"""
         d = data << 10
         while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G15) >= 0:
@@ -388,7 +394,7 @@ class QRUtil:
         return ((data << 10) | d) ^ QRUtil.G15_MASK
 
     @staticmethod
-    def get_BCH_type_number(data):
+    def get_BCH_type_number(data: int) -> int:
         """Encode with G18 BCH mask"""
         d = data << 12
         while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18) >= 0:
@@ -398,7 +404,7 @@ class QRUtil:
         return (data << 12) | d
 
     @staticmethod
-    def get_BCH_digit(data):
+    def get_BCH_digit(data: int) -> int:
         """Count digits in data"""
         digit = 0
         while data != 0:
@@ -408,12 +414,12 @@ class QRUtil:
 
     # pylint: enable=invalid-name
     @staticmethod
-    def get_pattern_position(qr_type):
+    def get_pattern_position(qr_type: int) -> bytes:
         """The mask pattern position array for this QR type"""
         return QRUtil.PATTERN_POSITION_TABLE[qr_type - 1]
 
     @staticmethod
-    def get_mask(mask, i, j):
+    def get_mask(mask: int, i: int, j: int) -> int:
         """Perform matching calculation on two vals for given pattern mask"""
         # pylint: disable=multiple-statements, too-many-return-statements
         if mask == 0:
@@ -436,7 +442,7 @@ class QRUtil:
         # pylint: enable=multiple-statements, too-many-return-statements
 
     @staticmethod
-    def get_error_correct_polynomial(ecc_length):
+    def get_error_correct_polynomial(ecc_length: int) -> "QRPolynomial":
         """Generate a ecc polynomial"""
         poly = QRPolynomial([1], 0)
         for i in range(ecc_length):
@@ -447,7 +453,7 @@ class QRUtil:
 class QRPolynomial:
     """Structure for creating and manipulating error code polynomials"""
 
-    def __init__(self, num, shift):
+    def __init__(self, num: int, shift: int):
         """Create a QR polynomial"""
         if not num:
             raise ValueError(num.length + "/" + shift)
@@ -458,21 +464,23 @@ class QRPolynomial:
         for i in range(len(num) - offset):
             self.num[i] = num[i + offset]
 
-    def get(self, index):
+    def get(self, index: int) -> int:
         """The exponent at the index location"""
         return self.num[index]
 
-    def get_length(self):
+    def get_length(self) -> int:
         """Length of the poly"""
         return len(self.num)
 
-    def multiply(self, e):  # pylint: disable=invalid-name
+    def multiply(
+        self, other_polynomial: "QRPolynomial"
+    ) -> "QRPolynomial":  # pylint: disable=invalid-name
         """Multiply two polynomials, returns a new one"""
-        num = [0 for x in range(self.get_length() + e.get_length() - 1)]
+        num = [0 for x in range(self.get_length() + other_polynomial.get_length() - 1)]
 
         for i in range(self.get_length()):
-            for j in range(e.get_length()):
-                num[i + j] ^= _gexp(_glog(self.get(i)) + _glog(e.get(j)))
+            for j in range(other_polynomial.get_length()):
+                num[i + j] ^= _gexp(_glog(self.get(i)) + _glog(other_polynomial.get(j)))
 
         return QRPolynomial(num, 0)
 
@@ -517,7 +525,7 @@ _QRRS_BLOCK_TABLE = (
 )  # pylint: disable=line-too-long
 
 
-def _get_rs_blocks(qr_type, ecc):
+def _get_rs_blocks(qr_type: int, ecc: int) -> List[Dict]:
     rs_block = _QRRS_BLOCK_TABLE[(qr_type - 1) * 4 + ecc]
 
     length = len(rs_block) // 3
@@ -535,7 +543,7 @@ def _get_rs_blocks(qr_type, ecc):
 class QRBitMatrix:
     """A bit-packed storage class for matrices"""
 
-    def __init__(self, width, height):
+    def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
         if width > 60:
@@ -543,7 +551,7 @@ class QRBitMatrix:
         self.buffer = [0] * self.height * 2
         self.used = [0] * self.height * 2
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         b = ""
         for y in range(self.height):
             for x in range(self.width):
@@ -554,7 +562,7 @@ class QRBitMatrix:
             b += "\n"
         return b
 
-    def __getitem__(self, key):
+    def __getitem__(self, key: Tuple[int, int]) -> int:
         x, y = key
         if y > self.width:
             raise ValueError()
@@ -564,7 +572,7 @@ class QRBitMatrix:
             return None
         return self.buffer[i] & (1 << j)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: Tuple[int, int], value: int) -> None:
         x, y = key
         if y > self.width:
             raise ValueError()
@@ -584,24 +592,24 @@ class QRBitBuffer:
         self.buffer = []
         self.length = 0
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return ".".join([str(n) for n in self.buffer])
 
-    def get(self, index):
+    def get(self, index: int) -> int:
         """The bit value at a location"""
         i = index // 8
         return self.buffer[i] & (1 << (7 - index % 8))
 
-    def put(self, num, length):
+    def put(self, num: int, length: int) -> None:
         """Add a number of bits from a single integer value"""
         for i in range(length):
             self.put_bit(num & (1 << (length - i - 1)))
 
-    def get_length_bits(self):
+    def get_length_bits(self) -> int:
         """Size of bit buffer"""
         return self.length
 
-    def put_bit(self, bit):
+    def put_bit(self, bit: int) -> None:
         """Insert one bit at the end of the bit buffer"""
         i = self.length // 8
         if len(self.buffer) <= i:
