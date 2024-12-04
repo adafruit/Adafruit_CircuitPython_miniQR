@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-import unittest
 import random
+import unittest
 
 import adafruit_miniqr
 

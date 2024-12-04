@@ -36,9 +36,8 @@ Implementation Notes
 # imports
 import math
 
-
 try:
-    from typing import Optional, List, Dict, Tuple
+    from typing import Dict, List, Optional, Tuple
 except ImportError:
     pass
 
@@ -74,11 +73,9 @@ def _gexp(n: int) -> int:
     return EXP_TABLE[n]
 
 
-# pylint: disable=line-too-long
-EXP_TABLE = b"\x01\x02\x04\x08\x10 @\x80\x1d:t\xe8\xcd\x87\x13&L\x98-Z\xb4u\xea\xc9\x8f\x03\x06\x0c\x180`\xc0\x9d'N\x9c%J\x945j\xd4\xb5w\xee\xc1\x9f#F\x8c\x05\n\x14(P\xa0]\xbai\xd2\xb9o\xde\xa1_\xbea\xc2\x99/^\xbce\xca\x89\x0f\x1e<x\xf0\xfd\xe7\xd3\xbbk\xd6\xb1\x7f\xfe\xe1\xdf\xa3[\xb6q\xe2\xd9\xafC\x86\x11\"D\x88\r\x1a4h\xd0\xbdg\xce\x81\x1f>|\xf8\xed\xc7\x93;v\xec\xc5\x973f\xcc\x85\x17.\\\xb8m\xda\xa9O\x9e!B\x84\x15*T\xa8M\x9a)R\xa4U\xaaI\x929r\xe4\xd5\xb7s\xe6\xd1\xbfc\xc6\x91?~\xfc\xe5\xd7\xb3{\xf6\xf1\xff\xe3\xdb\xabK\x961b\xc4\x957n\xdc\xa5W\xaeA\x82\x192d\xc8\x8d\x07\x0e\x1c8p\xe0\xdd\xa7S\xa6Q\xa2Y\xb2y\xf2\xf9\xef\xc3\x9b+V\xacE\x8a\t\x12$H\x90=z\xf4\xf5\xf7\xf3\xfb\xeb\xcb\x8b\x0b\x16,X\xb0}\xfa\xe9\xcf\x83\x1b6l\xd8\xadG\x8e\x01"
+EXP_TABLE = b"\x01\x02\x04\x08\x10 @\x80\x1d:t\xe8\xcd\x87\x13&L\x98-Z\xb4u\xea\xc9\x8f\x03\x06\x0c\x180`\xc0\x9d'N\x9c%J\x945j\xd4\xb5w\xee\xc1\x9f#F\x8c\x05\n\x14(P\xa0]\xbai\xd2\xb9o\xde\xa1_\xbea\xc2\x99/^\xbce\xca\x89\x0f\x1e<x\xf0\xfd\xe7\xd3\xbbk\xd6\xb1\x7f\xfe\xe1\xdf\xa3[\xb6q\xe2\xd9\xafC\x86\x11\"D\x88\r\x1a4h\xd0\xbdg\xce\x81\x1f>|\xf8\xed\xc7\x93;v\xec\xc5\x973f\xcc\x85\x17.\\\xb8m\xda\xa9O\x9e!B\x84\x15*T\xa8M\x9a)R\xa4U\xaaI\x929r\xe4\xd5\xb7s\xe6\xd1\xbfc\xc6\x91?~\xfc\xe5\xd7\xb3{\xf6\xf1\xff\xe3\xdb\xabK\x961b\xc4\x957n\xdc\xa5W\xaeA\x82\x192d\xc8\x8d\x07\x0e\x1c8p\xe0\xdd\xa7S\xa6Q\xa2Y\xb2y\xf2\xf9\xef\xc3\x9b+V\xacE\x8a\t\x12$H\x90=z\xf4\xf5\xf7\xf3\xfb\xeb\xcb\x8b\x0b\x16,X\xb0}\xfa\xe9\xcf\x83\x1b6l\xd8\xadG\x8e\x01"  # noqa: E501
 
-LOG_TABLE = b"\x00\x00\x01\x19\x022\x1a\xc6\x03\xdf3\xee\x1bh\xc7K\x04d\xe0\x0e4\x8d\xef\x81\x1c\xc1i\xf8\xc8\x08Lq\x05\x8ae/\xe1$\x0f!5\x93\x8e\xda\xf0\x12\x82E\x1d\xb5\xc2}j'\xf9\xb9\xc9\x9a\txM\xe4r\xa6\x06\xbf\x8bbf\xdd0\xfd\xe2\x98%\xb3\x10\x91\"\x886\xd0\x94\xce\x8f\x96\xdb\xbd\xf1\xd2\x13\\\x838F@\x1eB\xb6\xa3\xc3H~nk:(T\xfa\x85\xba=\xca^\x9b\x9f\n\x15y+N\xd4\xe5\xacs\xf3\xa7W\x07p\xc0\xf7\x8c\x80c\rgJ\xde\xed1\xc5\xfe\x18\xe3\xa5\x99w&\xb8\xb4|\x11D\x92\xd9# \x89.7?\xd1[\x95\xbc\xcf\xcd\x90\x87\x97\xb2\xdc\xfc\xbea\xf2V\xd3\xab\x14*]\x9e\x84<9SGmA\xa2\x1f-C\xd8\xb7{\xa4v\xc4\x17I\xec\x7f\x0co\xf6l\xa1;R)\x9dU\xaa\xfb`\x86\xb1\xbb\xcc>Z\xcbY_\xb0\x9c\xa9\xa0Q\x0b\xf5\x16\xebzu,\xd7O\xae\xd5\xe9\xe6\xe7\xad\xe8t\xd6\xf4\xea\xa8PX\xaf"
-# pylint: enable=line-too-long
+LOG_TABLE = b"\x00\x00\x01\x19\x022\x1a\xc6\x03\xdf3\xee\x1bh\xc7K\x04d\xe0\x0e4\x8d\xef\x81\x1c\xc1i\xf8\xc8\x08Lq\x05\x8ae/\xe1$\x0f!5\x93\x8e\xda\xf0\x12\x82E\x1d\xb5\xc2}j'\xf9\xb9\xc9\x9a\txM\xe4r\xa6\x06\xbf\x8bbf\xdd0\xfd\xe2\x98%\xb3\x10\x91\"\x886\xd0\x94\xce\x8f\x96\xdb\xbd\xf1\xd2\x13\\\x838F@\x1eB\xb6\xa3\xc3H~nk:(T\xfa\x85\xba=\xca^\x9b\x9f\n\x15y+N\xd4\xe5\xacs\xf3\xa7W\x07p\xc0\xf7\x8c\x80c\rgJ\xde\xed1\xc5\xfe\x18\xe3\xa5\x99w&\xb8\xb4|\x11D\x92\xd9# \x89.7?\xd1[\x95\xbc\xcf\xcd\x90\x87\x97\xb2\xdc\xfc\xbea\xf2V\xd3\xab\x14*]\x9e\x84<9SGmA\xa2\x1f-C\xd8\xb7{\xa4v\xc4\x17I\xec\x7f\x0co\xf6l\xa1;R)\x9dU\xaa\xfb`\x86\xb1\xbb\xcc>Z\xcbY_\xb0\x9c\xa9\xa0Q\x0b\xf5\x16\xebzu,\xd7O\xae\xd5\xe9\xe6\xe7\xad\xe8t\xd6\xf4\xea\xa8PX\xaf"  # noqa: E501
 
 
 class QRCode:
@@ -90,7 +87,7 @@ class QRCode:
         match. Default `error_correct` is type L (7%), but you can select M,
         Q or H."""
         self.type = qr_type
-        self.ECC = error_correct  # pylint: disable=invalid-name
+        self.ECC = error_correct
         self.matrix = None
         self.module_count = 0
         self.data_cache = None
@@ -138,7 +135,7 @@ class QRCode:
         for r in range(-1, 8):
             if row + r <= -1 or self.module_count <= row + r:
                 continue
-            for c in range(-1, 8):  # pylint: disable=invalid-name
+            for c in range(-1, 8):
                 if col + c <= -1 or self.module_count <= col + c:
                     continue
                 test = (
@@ -155,7 +152,7 @@ class QRCode:
                 continue
             self.matrix[r, 6] = r % 2 == 0
 
-        for c in range(8, self.module_count - 8):  # pylint: disable=invalid-name
+        for c in range(8, self.module_count - 8):
             if self.matrix[6, c] is not None:
                 continue
             self.matrix[6, c] = c % 2 == 0
@@ -170,7 +167,7 @@ class QRCode:
                     continue
 
                 for r in range(-2, 3):
-                    for c in range(-2, 3):  # pylint: disable=invalid-name
+                    for c in range(-2, 3):
                         test = abs(r) == 2 or abs(c) == 2 or (r == 0 and c == 0)
                         self.matrix[row + r, col + c] = test
 
@@ -223,10 +220,10 @@ class QRCode:
 
         for col in range(self.module_count - 1, 0, -2):
             if col == 6:
-                col -= 1
+                col -= 1  # noqa: PLW2901 loop variable overwritten
 
             while True:
-                for c in range(2):  # pylint: disable=invalid-name
+                for c in range(2):
                     if self.matrix[row, col - c] is None:
                         dark = False
                         if byte_idx < len(data):
@@ -254,7 +251,7 @@ class QRCode:
 
         for data in data_list:
             if isinstance(data, str):
-                data = str.encode(data)
+                data = str.encode(data)  # noqa: PLW2901 loop variable overwritten
             buffer.put(_MODE_8BIT_BYTE, 4)
             buffer.put(len(data), 8)
             for byte in data:
@@ -267,8 +264,7 @@ class QRCode:
 
         if buffer.get_length_bits() > total_data_count * 8:
             raise RuntimeError(
-                "Code length overflow: %d > %d"
-                % (buffer.get_length_bits(), total_data_count * 8)
+                "Code length overflow: %d > %d" % (buffer.get_length_bits(), total_data_count * 8)
             )
 
         # // end code
@@ -290,10 +286,10 @@ class QRCode:
 
         return QRCode._create_bytes(buffer, rs_blocks)
 
-    # pylint: disable=too-many-locals,too-many-branches
     @staticmethod
-    def _create_bytes(buffer: bytes, rs_blocks: List[Dict]) -> bytes:
+    def _create_bytes(buffer: bytes, rs_blocks: List[Dict]) -> bytes:  # noqa: PLR0912 Too many branches
         """Perform error calculation math on bit buffer"""
+
         offset = 0
         max_dc_count = 0
         max_ec_count = 0
@@ -358,9 +354,6 @@ class QRCode:
         return data
 
 
-# pylint: enable=too-many-locals,too-many-branches
-
-
 class QRUtil:
     """A selection of bit manipulation tools for QR generation and BCH encoding"""
 
@@ -381,15 +374,12 @@ class QRUtil:
     G18 = 0b1111100100101
     G15_MASK = 0b101010000010010
 
-    # pylint: disable=invalid-name
     @staticmethod
     def get_BCH_type_info(data: int) -> int:
         """Encode with G15 BCH mask"""
         d = data << 10
         while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G15) >= 0:
-            d ^= QRUtil.G15 << (
-                QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G15)
-            )
+            d ^= QRUtil.G15 << (QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G15))
 
         return ((data << 10) | d) ^ QRUtil.G15_MASK
 
@@ -398,9 +388,7 @@ class QRUtil:
         """Encode with G18 BCH mask"""
         d = data << 12
         while QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18) >= 0:
-            d ^= QRUtil.G18 << (
-                QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18)
-            )
+            d ^= QRUtil.G18 << (QRUtil.get_BCH_digit(d) - QRUtil.get_BCH_digit(QRUtil.G18))
         return (data << 12) | d
 
     @staticmethod
@@ -412,16 +400,14 @@ class QRUtil:
             data >>= 1
         return digit
 
-    # pylint: enable=invalid-name
     @staticmethod
     def get_pattern_position(qr_type: int) -> bytes:
         """The mask pattern position array for this QR type"""
         return QRUtil.PATTERN_POSITION_TABLE[qr_type - 1]
 
     @staticmethod
-    def get_mask(mask: int, i: int, j: int) -> int:
+    def get_mask(mask: int, i: int, j: int) -> int:  # noqa: PLR0911 Too many return statements
         """Perform matching calculation on two vals for given pattern mask"""
-        # pylint: disable=multiple-statements, too-many-return-statements
         if mask == 0:
             return (i + j) % 2 == 0
         if mask == 1:
@@ -439,7 +425,6 @@ class QRUtil:
         if mask == 7:
             return ((i * j) % 3 + (i + j) % 2) % 2 == 0
         raise ValueError("Bad mask pattern:" + mask)
-        # pylint: enable=multiple-statements, too-many-return-statements
 
     @staticmethod
     def get_error_correct_polynomial(ecc_length: int) -> "QRPolynomial":
@@ -472,9 +457,7 @@ class QRPolynomial:
         """Length of the poly"""
         return len(self.num)
 
-    def multiply(
-        self, other_polynomial: "QRPolynomial"
-    ) -> "QRPolynomial":  # pylint: disable=invalid-name
+    def multiply(self, other_polynomial: "QRPolynomial") -> "QRPolynomial":
         """Multiply two polynomials, returns a new one"""
         num = [0 for x in range(self.get_length() + other_polynomial.get_length() - 1)]
 
@@ -522,7 +505,7 @@ _QRRS_BLOCK_TABLE = (
     b"\x02\x92t",
     b"\x04$\x0c\x04%\r",
     b"\x04$\x10\x04%\x11",
-)  # pylint: disable=line-too-long
+)
 
 
 def _get_rs_blocks(qr_type: int, ecc: int) -> List[Dict]:
