@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 import sys
+
 import adafruit_miniqr
 
 # For drawing filled rectangles to the console:

@@ -3,6 +3,7 @@
 
 import board
 import displayio
+
 import adafruit_miniqr
 
 
@@ -35,9 +36,7 @@ palette = displayio.Palette(2)
 palette[0] = 0xFFFFFF
 palette[1] = 0x000000
 # we'll scale the QR code as big as the display can handle
-scale = min(
-    board.DISPLAY.width // qr_bitmap.width, board.DISPLAY.height // qr_bitmap.height
-)
+scale = min(board.DISPLAY.width // qr_bitmap.width, board.DISPLAY.height // qr_bitmap.height)
 # then center it!
 pos_x = int(((board.DISPLAY.width / scale) - qr_bitmap.width) / 2)
 pos_y = int(((board.DISPLAY.height / scale) - qr_bitmap.height) / 2)
