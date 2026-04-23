@@ -264,7 +264,7 @@ class QRCode:
 
         if buffer.get_length_bits() > total_data_count * 8:
             raise RuntimeError(
-                "Code length overflow: %d > %d" % (buffer.get_length_bits(), total_data_count * 8)
+                f"Code length overflow: {buffer.get_length_bits()} > {total_data_count * 8}"
             )
 
         # // end code
